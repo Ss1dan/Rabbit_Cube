@@ -50,6 +50,9 @@ const bookingSlice = createSlice({
       state.kitchenItems = [];
       state.success = false;
       state.error = null;
+    },
+    clearActiveBooking: (state) => {
+      state.activeBooking = null;
     }
   },
   extraReducers: (builder) => {
@@ -62,5 +65,5 @@ const bookingSlice = createSlice({
   }
 });
 
-export const { setDate, setTimeStart, setTimeEnd, selectPlace, toggleKitchenItem, clearBooking } = bookingSlice.actions;
+export const { setDate, setTimeStart, setTimeEnd, selectPlace, toggleKitchenItem, clearBooking, clearActiveBooking } = bookingSlice.actions;
 export default bookingSlice.reducer;

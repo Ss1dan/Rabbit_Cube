@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile, clearProfile } from '../../store/profileSlice';
-import { fetchActiveBooking } from '../../store/bookingSlice';
+import { fetchActiveBooking, clearActiveBooking } from '../../store/bookingSlice';
 import { fetchHistory, cancelBooking } from '../../store/historySlice';
 import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../../store/authSlice';
 import { HiOutlineLogout, HiOutlineCog } from 'react-icons/hi';
 import HistoryList from './HistoryList';
 import styles from './Profile.module.css';
+
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -38,6 +39,16 @@ const Profile = () => {
 
   if (profileLoading) return <div className={styles.loading}>Загрузка...</div>;
   if (!profile) return <div className={styles.loading}>Пользователь не найден</div>;
+
+  const handleCancel = async () => {
+    const result = await dispatch(cancelBooking(activeBooking.id));
+    if (result.meta.requestStatus === 'fulfilled') {
+      dispatch(clearActiveBooking());
+      dispatch(fetchHistory(1));
+    } else {
+      alert('Ошибка при отмене бронирования');
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -100,12 +111,7 @@ const Profile = () => {
                   </p>
                 )}
                 </div>
-                <button 
-                  className={styles.cancelBtn}
-                  onClick={() => {
-                    dispatch(cancelBooking(activeBooking.id));
-                  }}
-                >
+                <button className={styles.cancelBtn} onClick={handleCancel}>
                   Отменить
                 </button>
               </div>
