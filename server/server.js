@@ -11,6 +11,35 @@ const bookingRoutes = require('./routes/booking.routes');
 const adminRoutes = require('./routes/admin.routes');
 const kitchenRoutes = require('./routes/kitchen.routes');
 
+const knexConfig = require('./config/knexfile');
+const knex = require('knex')(knexConfig.development);
+
+(async () => {
+  try {
+    console.log('Проверяю базу данных...');
+    await knex.raw('SELECT 1');
+    console.log('База доступна.');
+
+    const [migrations] = await knex.migrate.latest();
+    if (migrations.length) {
+      console.log(`Применено новых миграций: ${migrations.length}`);
+    } else {
+      console.log('Новых миграций нет.');
+    }
+
+    const rolesCount = await knex('roles').count('id as count').first();
+    if (!rolesCount.count || rolesCount.count == 0) {
+      console.log('Запускаю сиды...');
+      await knex.seed.run();
+      console.log('Сиды выполнены.');
+    } else {
+      console.log('Сиды уже были запущены.');
+    }
+  } catch (err) {
+    console.error('Ошибка миграции/БД, но сервак работает:', err.message);
+  }
+})();
+
 const app = express();
 
 // Middleware
@@ -24,10 +53,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: message => winston.http(message.trim()) } }));
 
-// Статические файлы (аватары)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API-роуты
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/computers', computerRoutes);
@@ -35,11 +62,10 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/kitchen', kitchenRoutes);
 
-// В production отдаём собранный React
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.use(express.static(path.join(__dirname, 'public')));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 }
 

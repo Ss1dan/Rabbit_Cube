@@ -8,6 +8,7 @@ import { logout } from '../../store/authSlice';
 import { HiOutlineLogout, HiOutlineCog } from 'react-icons/hi';
 import HistoryList from './HistoryList';
 import styles from './Profile.module.css';
+import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 
 
 const Profile = () => {
@@ -110,6 +111,13 @@ const Profile = () => {
                       })()}
                   </p>
                 )}
+                  {activeBooking && activeBooking.status === 'pending' && (
+  <div className={styles.pendingBooking}>
+    <p>Код активации: <strong>{activeBooking.activation_code}</strong></p>
+    <p>Бронь ожидает активации. Обратитесь к администратору.</p>
+    <CountdownTimer expiresAt={activeBooking.expires_at} />
+  </div>
+)}
                 </div>
                 <button className={styles.cancelBtn} onClick={handleCancel}>
                   Отменить

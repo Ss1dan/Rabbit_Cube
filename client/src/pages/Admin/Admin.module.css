@@ -1,0 +1,380 @@
+/* ===== Контейнер ===== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  .title {
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--accent);
+    text-align: center;
+    margin: 25px 0;
+  }
+  
+  /* ===== Вкладки ===== */
+  :global .nav-tabs .nav-link {
+    color: var(--text);
+    background-color: var(--block);
+    border: 2px solid var(--accent);
+    margin-right: 5px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-size: 18px;
+    padding: 10px 20px;
+  }
+  
+  :global .nav-tabs .nav-link.active {
+    background-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+  
+  /* ===== Секции внутри вкладок ===== */
+  .section {
+    background-color: var(--block);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 25px;
+    margin-bottom: 25px;
+  }
+  
+  .sectionTitle {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+  
+  /* ===== Формы ===== */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .formRow {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .formInput {
+    background: transparent;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 10px 15px;
+    font-size: 16px;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+  }
+  
+  .formInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 5px rgba(78, 204, 163, 0.3);
+  }
+  
+  .formSelect {
+    composes: formInput;
+    cursor: pointer;
+  }
+  
+  .formBtn {
+    background-color: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    align-self: flex-start;
+  }
+  
+  .formBtn:hover {
+    opacity: 0.9;
+  }
+  
+  /* ===== Таблицы ===== */
+  .table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 15px;
+  }
+  
+  .table th {
+    background-color: var(--accent);
+    color: #eee;
+    font-weight: 600;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 16px;
+  }
+  
+  .table th:first-child {
+    border-radius: var(--radius) 0 0 0;
+  }
+  
+  .table th:last-child {
+    border-radius: 0 var(--radius) 0 0;
+  }
+  
+  .table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(78, 204, 163, 0.2);
+    font-size: 16px;
+  }
+  
+  .table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .table tr:hover td {
+    background-color: rgba(78, 204, 163, 0.05);
+  }
+  
+  /* ===== Карточки (кухня / компьютеры / брони) ===== */
+  .card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: rgba(78, 204, 163, 0.03);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+  }
+  
+  .cardInfo {
+    flex: 1;
+    font-size: 16px;
+  }
+  
+  .cardActions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .actionBtn {
+    background: transparent;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    font-size: 14px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .actionBtn:hover {
+    background-color: var(--accent);
+    color: #000;
+  }
+  
+  .dangerBtn {
+    composes: actionBtn;
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+  }
+  
+  .dangerBtn:hover {
+    background-color: #ff6b6b;
+    color: #fff;
+  }
+  
+  /* ===== Редактирование на месте ===== */
+  .editForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .editForm input,
+  .editForm select {
+    padding: 8px 12px;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+  }
+  
+  .editForm input[type="number"] {
+    width: 100px;
+  }
+  
+  .editForm textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+  }
+  
+  /* ===== Ожидающие брони ===== */
+  .pendingList {
+    margin-bottom: 20px;
+  }
+  
+  .pendingItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+  }
+  
+  .pendingItem .info {
+    flex: 1;
+  }
+  
+  .pendingItem .code {
+    font-weight: bold;
+    color: var(--accent);
+  }
+  
+  .divider {
+    border: none;
+    border-top: 2px solid var(--accent);
+    margin: 25px 0;
+  }
+  
+  .loading {
+    text-align: center;
+    font-size: 24px;
+    margin-top: 50px;
+  }
+
+  /* Карточки с раскрытием */
+.card {
+    background-color: rgba(78, 204, 163, 0.03);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .cardHeader:hover {
+    background-color: rgba(78, 204, 163, 0.08);
+  }
+  
+  .cardInfo {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .cardActions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .collapsible {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  
+  .collapsible.open {
+    max-height: 600px; /* достаточно для формы */
+  }
+  
+  .editForm {
+    padding: 0 15px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  .editForm input,
+  .editForm select,
+  .editForm textarea {
+    background: transparent;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  
+  .editForm textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  /* Аккордеон секций */
+.section {
+    margin-bottom: 15px;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: var(--block);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .sectionHeader:hover {
+    background-color: rgba(78, 204, 163, 0.05);
+  }
+  
+  .sectionTitle {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0;
+  }
+  
+  .arrow {
+    font-size: 18px;
+    transition: transform 0.3s;
+    color: var(--accent);
+  }
+  
+  .arrow.open {
+    transform: rotate(180deg);
+  }
+  
+  .collapsible {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+  
+  .collapsible.open {
+    max-height: 2000px; /* достаточно для любого содержимого */
+  }
+  
+  .sectionContent {
+    padding: 20px 25px;
+    background-color: rgba(57, 62, 70, 0.3); /* лёгкий оттенок */
+  }
+  
+  .subTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 15px;
+  }

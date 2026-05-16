@@ -43,6 +43,9 @@ exports.createBooking = async (req, res) => {
     if (conflict) {
       return res.status(409).send({ message: 'Это время уже занято' });
     }
+    // Генерируем 6-значный код активации
+    const activationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // +15 минут
 
     const [bookingId] = await db('bookings').insert({
       user_id: userId,
@@ -51,7 +54,9 @@ exports.createBooking = async (req, res) => {
       start_time,
       end_time,
       kitchen_items: JSON.stringify(kitchen_items || []),
-      status: 'active'
+      status: 'pending',
+      activation_code: activationCode,
+      expires_at: expiresAt,
     }).returning('id');
 
     // Получить информацию для письма
@@ -76,6 +81,12 @@ exports.createBooking = async (req, res) => {
 };
 
 exports.getActiveBooking = async (req, res) => {
+  // Помечаем истекшие брони как expired
+  await db('bookings')
+  .where('status', 'pending')
+  .andWhere('expires_at', '<', new Date())
+  .update({ status: 'expired', activation_code: null, expires_at: null });
+
   try {
     const booking = await db('bookings')
       .join('computers', 'bookings.computer_id', 'computers.id')
