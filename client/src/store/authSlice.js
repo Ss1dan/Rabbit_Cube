@@ -46,6 +46,18 @@ export const googleAuth = createAsyncThunk('auth/googleAuth', async (token, { re
   }
 });
 
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token');
+    const response = await API.get('/user/profile');
+    return response.data;
+  } catch (err) {
+    localStorage.removeItem('token');
+    throw err;
+  }
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -54,7 +66,8 @@ const authSlice = createSlice({
     roles: [],
     isAuth: false,
     loading: false,
-    error: null
+    error: null,
+    checked: false,
   },
   reducers: {
     logout: (state) => {
@@ -96,14 +109,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload?.message || 'Ошибка входа';
       })
-      // Добавлены обработчики confirmEmail
       .addCase(confirmEmail.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(confirmEmail.fulfilled, (state, action) => {
         state.loading = false;
-        // Теперь подтверждение почты автоматически авторизует пользователя
         state.user = { id: action.payload.user.id, login: action.payload.user.login, email: action.payload.user.email };
         state.roles = action.payload.roles;
         state.token = action.payload.accessToken;
@@ -127,6 +138,23 @@ const authSlice = createSlice({
       .addCase(googleAuth.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Ошибка входа через Google';
+      })
+      .addCase(checkAuth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuth = true;
+        state.checked = true;
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.loading = false;
+        state.isAuth = false;
+        state.user = null;
+        state.roles = [];
+        state.token = null;
+        state.checked = true;
       });
   }
 });

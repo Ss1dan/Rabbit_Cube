@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { checkAuth } from './store/authSlice';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
@@ -12,12 +13,16 @@ import Admin from './pages/Admin/Admin';
 import Confirm from './pages/Confirm/Confirm';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
-import ConfirmEmailChange from './pages/ConfirmEmailChange/ConfirmEmailChange';
-import ConfirmPasswordChange from './pages/ConfirmPasswordChange/ConfirmPasswordChange';
-
 
 function App() {
-  const { isAuth, roles } = useSelector(state => state.auth);
+  const dispatch = useDispatch();
+  const { isAuth, roles, checked } = useSelector(state => state.auth);
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  if (!checked) return <div>Загрузка...</div>;
 
   return (
     <Router>
@@ -27,8 +32,6 @@ function App() {
         <Route path="/confirm" element={<Confirm />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
-        <Route path="/confirm-password-change" element={<ConfirmPasswordChange />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/profile" />} />
           <Route path="/profile" element={isAuth ? <Profile /> : <Navigate to="/login" />} />
