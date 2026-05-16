@@ -1,0 +1,21 @@
+:root {
+    --bg: #232931;
+    --block: #393E46;
+    --accent: #4ECCA3;
+    --text: #EEEEEE;
+    --radius: 20px;
+    --border-width: 4px;
+
+    --error: #ff6b6b;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .light-theme {
+    --bg: #ddd;
+    --block: #fff;
+    --accent: #1E8E6E;
+    --text: #1A1A1A;
+    --border: 2px solid var(--accent);
+    --error: #D32F2F;
+  }
