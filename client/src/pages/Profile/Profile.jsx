@@ -105,7 +105,11 @@ const Profile = () => {
       <div className={styles.profileBlock}>
         <div className={styles.columnAvatar}>
           <img 
-            src={profile.avatar ? `${process.env.REACT_APP_API_URL?.replace('/api', '')}/uploads/avatars/${profile.avatar}` : '/media/default-avatar.png'}            
+src={
+  profile.avatar
+    ? `${process.env.REACT_APP_API_URL?.replace('/api', '')}/uploads/avatars/${profile.avatar}`
+    : '/media/default-avatar.png'
+}
             alt="Avatar" 
             className={styles.avatar}
           />

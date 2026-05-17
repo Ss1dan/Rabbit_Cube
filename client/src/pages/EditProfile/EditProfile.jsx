@@ -129,7 +129,13 @@ const EditProfile = () => {
         <div className={styles.columnLeft}>
           <div className={styles.avatarWrapper} onClick={() => fileInputRef.current.click()}>
             <img 
-              src={profile.avatar ? `${process.env.REACT_APP_API_URL?.replace('/api', '')}/uploads/avatars/${profile.avatar}` : '/media/default-avatar.png'}
+src={
+  preview
+    ? preview
+    : profile.avatar
+      ? `${process.env.REACT_APP_API_URL?.replace('/api', '')}/uploads/avatars/${profile.avatar}`
+      : '/media/default-avatar.png'
+}
               alt="Avatar" 
               className={styles.avatar}
             />
