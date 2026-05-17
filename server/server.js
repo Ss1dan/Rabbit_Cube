@@ -61,6 +61,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use(express.json());
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads', 'avatars');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: message => winston.http(message.trim()) } }));
 
@@ -73,7 +78,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/kitchen', kitchenRoutes);
 // Временно разрешим все origins (потом замените на конкретный)
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
 
 //if (process.env.NODE_ENV === 'production') {
 //  app.use(express.static(path.join(__dirname, 'public')));
