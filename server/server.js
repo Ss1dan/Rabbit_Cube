@@ -75,12 +75,12 @@ app.use('/api/kitchen', kitchenRoutes);
 // Временно разрешим все origins (потом замените на конкретный)
 app.use(cors({ origin: '*' }));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
-}
+//if (process.env.NODE_ENV === 'production') {
+//  app.use(express.static(path.join(__dirname, 'public')));
+//  app.get('*', (req, res) => {
+//    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//  });
+//}
 
 // Обработка ошибок
 app.use((err, req, res, next) => {
