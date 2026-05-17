@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOccupiedForSlot } from '../../store/computerSlice';
 import { setDate, setTimeStart, setTimeEnd, selectPlace, clearBooking, createBooking, toggleKitchenItem } from '../../store/bookingSlice';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
 import Scheme from './Scheme';
 import Popup from './Popup';
 import styles from './Booking.module.css';
 import { useNavigate } from 'react-router-dom';
 import { fetchActiveBooking } from '../../store/bookingSlice';
+import DatePicker from '../../components/DatePicker/DatePicker';
+import TimeWheel from '../../components/TimeWheel/TimeWheel';
 
 const Booking = () => {
   const dispatch = useDispatch();
   const { selectedDate, selectedTimeStart, selectedTimeEnd, selectedPlace, kitchenItems, success, loading } = useSelector(state => state.booking);
   const { occupiedIds } = useSelector(state => state.computers);
   const [showPopup, setShowPopup] = useState(false);
-  const selectedDateObj = new Date(selectedDate);
+  const selectedDateObj = selectedDate ? new Date(selectedDate) : new Date();
 
   useEffect(() => {
     document.title = 'Rabbit Cube — Бронирование';
@@ -27,7 +27,7 @@ const Booking = () => {
   }, [selectedDate, selectedTimeStart, selectedTimeEnd, dispatch]);
 
   const handleDateChange = (date) => {
-    dispatch(setDate(date));
+    dispatch(setDate(date.toISOString()));
   };
 
   const handlePlaceClick = (id) => {
@@ -68,30 +68,24 @@ const Booking = () => {
       <h1 className={styles.title}>Выберите дату и время</h1>
 
       <div className={styles.datePicker}>
-        <DatePicker
-          selected={selectedDate}
-          onChange={handleDateChange}
-          minDate={new Date()}
-          inline
-          className={styles.customDatePicker}
-        />
+      <DatePicker
+  selectedDate={selectedDate}
+  onDateChange={(date) => dispatch(setDate(date))}
+/>
       </div>
 
       <div className={styles.timeBlock}>
-        <input 
-          type="time" 
-          value={selectedTimeStart} 
-          onChange={(e) => dispatch(setTimeStart(e.target.value))}
-          className={styles.timeInput}
-        />
-        <span className={styles.timeSeparator}>—</span>
-        <input 
-          type="time" 
-          value={selectedTimeEnd} 
-          onChange={(e) => dispatch(setTimeEnd(e.target.value))}
-          className={styles.timeInput}
-        />
-      </div>
+  <TimeWheel
+    label="Начало"
+    value={selectedTimeStart}
+    onChange={(time) => dispatch(setTimeStart(time))}
+  />
+  <TimeWheel
+    label="Конец"
+    value={selectedTimeEnd}
+    onChange={(time) => dispatch(setTimeEnd(time))}
+  />
+</div>
 
       <Scheme onPlaceClick={handlePlaceClick} occupiedIds={occupiedIds} selectedPlace={selectedPlace} />
 
