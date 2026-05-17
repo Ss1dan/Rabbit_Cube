@@ -11,10 +11,9 @@ const bookingRoutes = require('./routes/booking.routes');
 const adminRoutes = require('./routes/admin.routes');
 const kitchenRoutes = require('./routes/kitchen.routes');
 
-const knexConfig = require('./config/knexfile');
-const knex = require('knex')(knexConfig.development);
-
 setInterval(async () => {
+  const knexConfig = require('./config/knexfile');
+  const knex = require('knex')(knexConfig.development);
   try {
     await knex('bookings')
       .where('status', 'active')
@@ -23,7 +22,7 @@ setInterval(async () => {
   } catch (err) {
     console.error('Ошибка авто-закрытия броней:', err);
   }
-}, 10000);
+}, 60000);
 
 (async () => {
   try {
