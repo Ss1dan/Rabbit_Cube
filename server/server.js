@@ -61,6 +61,8 @@ app.use('/api/computers', computerRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/kitchen', kitchenRoutes);
+// Временно разрешим все origins (потом замените на конкретный)
+app.use(cors({ origin: '*' }));
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'public')));
