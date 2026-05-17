@@ -1,85 +1,69 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const { Resend } = require('resend');
 
-// Используем Mailtrap для тестовой отправки (SMTP)
-const transporter = nodemailer.createTransport({
-  host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
-  port: process.env.MAILTRAP_PORT || 2525,
-  auth: {
-    user: process.env.MAILTRAP_USER,
-    pass: process.env.MAILTRAP_PASS,
-  },
-});
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
+
+const sendOrLog = async (mailOptions) => {
+  if (resend) {
+    return resend.emails.send({
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+  }
+  // Если API-ключ не задан, пишем в лог
+  console.log(`[MAIL] To: ${mailOptions.to}`);
+  console.log(`[MAIL] Subject: ${mailOptions.subject}`);
+  console.log(`[MAIL] HTML: ${mailOptions.html}`);
+};
 
 exports.sendConfirmation = async (to, token) => {
-  const link = `${process.env.CLIENT_URL}/confirm?token=${token}`;
-  await transporter.sendMail({
-    from: `Rabbit Cube <${process.env.MAIL_USER}>`,
+  const link = `${process.env.CLIENT_URL || 'http://localhost:3000'}/confirm?token=${token}`;
+  await sendOrLog({
+    from: 'Rabbit Cube <noreply@rabbitcube.ru>',
     to,
     subject: 'Подтверждение регистрации',
-    html: `
-      <h2>Добро пожаловать в Rabbit Cube!</h2>
-      <p>Для подтверждения аккаунта перейдите по ссылке:</p>
-      <a href="${link}">${link}</a>
-    `
+    html: `<h2>Добро пожаловать!</h2><p>Перейдите по ссылке: <a href="${link}">${link}</a></p>`,
   });
 };
 
 exports.sendBookingConfirmation = async (to, booking) => {
-  await transporter.sendMail({
-    from: `Rabbit Cube <${process.env.MAIL_USER}>`,
+  await sendOrLog({
+    from: 'Rabbit Cube <noreply@rabbitcube.ru>',
     to,
     subject: 'Бронирование подтверждено',
-    html: `
-      <h2>Бронирование успешно создано</h2>
-      <p>Дата: ${booking.booking_date}</p>
-      <p>Время: ${booking.start_time} - ${booking.end_time}</p>
-      <p>Компьютер: ${booking.computer_name}</p>
-    `
+    html: `<p>Дата: ${booking.booking_date}</p><p>Время: ${booking.start_time} – ${booking.end_time}</p><p>Компьютер: ${booking.computer_name}</p>`,
   });
 };
 
 exports.sendPasswordReset = async (to, token) => {
-  const link = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
-  await transporter.sendMail({
-    from: `Rabbit Cube <${process.env.MAIL_USER}>`,
+  const link = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  await sendOrLog({
+    from: 'Rabbit Cube <noreply@rabbitcube.ru>',
     to,
     subject: 'Восстановление пароля',
-    html: `
-      <h2>Восстановление пароля</h2>
-      <p>Для сброса пароля перейдите по ссылке:</p>
-      <a href="${link}">${link}</a>
-      <p>Ссылка действительна 1 час.</p>
-    `
+    html: `<p>Для сброса пароля перейдите по ссылке: <a href="${link}">${link}</a></p>`,
   });
 };
 
 exports.sendEmailChangeConfirmation = async (to, token) => {
-  const link = `${process.env.CLIENT_URL}/confirm-email-change?token=${token}`;
-  await transporter.sendMail({
-    from: `Rabbit Cube <${process.env.MAIL_USER}>`,
+  const link = `${process.env.CLIENT_URL || 'http://localhost:3000'}/confirm-email-change?token=${token}`;
+  await sendOrLog({
+    from: 'Rabbit Cube <noreply@rabbitcube.ru>',
     to,
     subject: 'Подтверждение смены email',
-    html: `
-      <h2>Подтвердите новый email</h2>
-      <p>Вы запросили смену email на этот адрес. Для подтверждения перейдите по ссылке:</p>
-      <a href="${link}">${link}</a>
-      <p>Ссылка действительна 1 час.</p>
-    `
+    html: `<p>Для подтверждения перейдите по ссылке: <a href="${link}">${link}</a></p>`,
   });
 };
 
 exports.sendPasswordChangeConfirmation = async (to, token) => {
-  const link = `${process.env.CLIENT_URL}/confirm-password-change?token=${token}`;
-  await transporter.sendMail({
-    from: `Rabbit Cube <${process.env.MAIL_USER}>`,
+  const link = `${process.env.CLIENT_URL || 'http://localhost:3000'}/confirm-password-change?token=${token}`;
+  await sendOrLog({
+    from: 'Rabbit Cube <noreply@rabbitcube.ru>',
     to,
     subject: 'Подтверждение смены пароля',
-    html: `
-      <h2>Подтвердите смену пароля</h2>
-      <p>Вы запросили смену пароля. Для подтверждения перейдите по ссылке:</p>
-      <a href="${link}">${link}</a>
-      <p>Ссылка действительна 1 час.</p>
-    `
+    html: `<p>Для подтверждения перейдите по ссылке: <a href="${link}">${link}</a></p>`,
   });
 };
