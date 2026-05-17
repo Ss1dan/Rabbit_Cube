@@ -8,6 +8,8 @@ export const getStatusText = (status) => {
         return 'Ожидает';
       case 'expired':
         return 'Истекла';
+      case 'completed':
+        return 'Выполнена';
       default:
         return status;
     }

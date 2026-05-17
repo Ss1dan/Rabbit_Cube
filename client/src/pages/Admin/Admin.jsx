@@ -327,7 +327,42 @@ const Admin = () => {
     }
     try {
       const res = await API.post('/admin/activate-booking', { bookingId, code });
-      alert(res.data.message);
+  
+      // Находим бронь в pendingBookings
+      const booking = pendingBookings.find(b => b.booking_id === bookingId);
+      if (booking) {
+        // Парсим kitchen_items (может быть строкой JSON или массивом)
+        let items = [];
+        if (typeof booking.kitchen_items === 'string') {
+          try {
+            items = JSON.parse(booking.kitchen_items);
+          } catch {
+            items = [];
+          }
+        } else if (Array.isArray(booking.kitchen_items)) {
+          items = booking.kitchen_items;
+        }
+  
+        // Получаем названия блюд из allKitchen
+        const kitchenNames = items
+          .map(item => {
+            const id = typeof item === 'object' ? item.id : item;
+            const found = allKitchen.find(k => k.id == id);
+            return found ? found.name : null;
+          })
+          .filter(name => name)
+          .join(', ');
+  
+        const kitchenMsg = kitchenNames
+          ? `\n\nЗаказанная кухня: ${kitchenNames}`
+          : '\n\nБез дополнительных блюд';
+  
+        alert(`${res.data.message}\n\nМесто: ${booking.computer_name}\nПользователь: ${booking.login}${kitchenMsg}`);
+      } else {
+        alert(res.data.message);
+      }
+  
+      // Очищаем поле кода
       setActivationCodes(prev => {
         const updated = { ...prev };
         delete updated[bookingId];

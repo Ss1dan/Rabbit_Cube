@@ -303,7 +303,8 @@ exports.getPendingBookings = async (req, res) => {
         'bookings.expires_at',
         'bookings.booking_date',
         'bookings.start_time',
-        'bookings.end_time'
+        'bookings.end_time',
+        'bookings.kitchen_items'
       )
       .orderBy('users.login', 'asc')
       .limit(limit)
