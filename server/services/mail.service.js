@@ -1,14 +1,14 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+// Используем Mailtrap для тестовой отправки (SMTP)
 const transporter = nodemailer.createTransport({
-  host: 'smtp.mail.ru',
-  port: 465,
-  secure: true,
+  host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
+  port: process.env.MAILTRAP_PORT || 2525,
   auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
+    user: process.env.MAILTRAP_USER,
+    pass: process.env.MAILTRAP_PASS,
+  },
 });
 
 exports.sendConfirmation = async (to, token) => {
