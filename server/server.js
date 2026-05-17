@@ -14,6 +14,17 @@ const kitchenRoutes = require('./routes/kitchen.routes');
 const knexConfig = require('./config/knexfile');
 const knex = require('knex')(knexConfig.development);
 
+setInterval(async () => {
+  try {
+    await knex('bookings')
+      .where('status', 'active')
+      .whereRaw("(booking_date || ' ' || end_time)::timestamp < now()")
+      .update({ status: 'completed' });
+  } catch (err) {
+    console.error('Ошибка авто-закрытия броней:', err);
+  }
+}, 10000);
+
 (async () => {
   try {
     console.log('Проверяю базу данных...');
@@ -77,19 +88,12 @@ app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Внутренняя ошибка сервера' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Rabbit Cube API is running' });
+});
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   winston.info(`Сервер запущен на порту ${PORT}`);
 });
 
-// Автоматическое закрытие активных броней, у которых вышло время
-setInterval(async () => {
-  try {
-    await knex('bookings')
-      .where('status', 'active')
-      .whereRaw("(booking_date::timestamp + end_time::time) < now()")
-      .update({ status: 'completed' });
-  } catch (err) {
-    console.error('Ошибка авто-закрытия броней:', err);
-  }
-}, 10000); // каждые 10 секунд
