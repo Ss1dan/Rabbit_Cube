@@ -62,8 +62,7 @@ const Scheme = ({ onPlaceClick, occupiedIds, selectedPlace }) => {
   const getStrokeColor = (type) => strokeColors[type] || '#4ECCA3';
 
   return (
-    <svg viewBox="0 0 693 514" width="100%" height="auto">
-      <image href={walls} x="0" y="0" width="693" height="514" />
+    <svg viewBox="0 0 693 514" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">      <image href={walls} x="0" y="0" width="693" height="514" />
       
       {places.map(p => (
         <g key={p.id} onClick={() => onPlaceClick(p.id)} style={{ cursor: 'pointer' }}>

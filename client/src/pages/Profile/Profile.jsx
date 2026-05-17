@@ -26,14 +26,11 @@ const Profile = () => {
       return;
     }
 
-    // Загрузка кухни (до return!)
     const loadKitchen = async () => {
       try {
         const res = await API.get('/kitchen');
         setAllKitchen(res.data);
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     };
     loadKitchen();
 
@@ -46,7 +43,6 @@ const Profile = () => {
     };
   }, [dispatch, isAuth, navigate]);
 
-  // Авто-проверка активной брони каждые 5 секунд
   useEffect(() => {
     const interval = setInterval(() => {
       dispatch(fetchActiveBooking());
@@ -74,25 +70,16 @@ const Profile = () => {
 
   const getKitchenNames = (kitchenItems, allKitchen) => {
     if (!kitchenItems || !allKitchen.length) return '';
-
     let ids = [];
-
-    // Если строка JSON – парсим
     if (typeof kitchenItems === 'string') {
-      try {
-        ids = JSON.parse(kitchenItems);
-      } catch {
-        return '';
-      }
+      try { ids = JSON.parse(kitchenItems); } catch { return ''; }
     } else if (Array.isArray(kitchenItems)) {
       ids = kitchenItems;
     } else {
       return '';
     }
-
     return ids
       .map(item => {
-        // item может быть числом (ID) или объектом с полем id (из админки)
         const id = typeof item === 'object' ? item.id : item;
         const found = allKitchen.find(k => k.id == id);
         return found ? found.name : '';
@@ -101,9 +88,20 @@ const Profile = () => {
       .join(', ');
   };
 
+  // Корректное формирование ISO-строки в локальном времени (без UTC)
+  const timerStartTime = activeBooking?.booking_date && activeBooking?.start_time
+    ? (() => {
+        // booking_date: "2026-05-17"
+        // start_time: "14:30" или "14:30:00"
+        const [hours, minutes, seconds = 0] = activeBooking.start_time.split(':').map(Number);
+        const date = new Date(activeBooking.booking_date);
+        date.setHours(hours, minutes, seconds);
+        return date.toISOString();
+      })()
+    : null;
+
   return (
     <div className={styles.container}>
-      {/* Блок профиля */}
       <div className={styles.profileBlock}>
         <div className={styles.columnAvatar}>
           <img 
@@ -116,14 +114,11 @@ const Profile = () => {
         <div className={styles.columnInfo}>
           <h2 className={styles.login}>{profile.login}</h2>
           <p className={styles.mood}>{profile.mood}</p>
-
           <h3 className={styles.sectionTitle}>Контакты</h3>
           <p className={styles.contact}>Номер: {profile.phone || 'Не указан'}</p>
           <p className={styles.contact}>Почта: {profile.email}</p>
-
           <h3 className={styles.sectionTitle}>О себе</h3>
           <p className={styles.about}>{profile.about || 'Не указано'}</p>
-
           {!activeBooking && (
             <Link to="/booking" className={styles.bookBtn}>
               <span className={styles.btnText}>Забронировать ПК</span>
@@ -132,14 +127,9 @@ const Profile = () => {
         </div>
           
         <div className={styles.columnActions}>
-          <Link to="/profile/edit" className={styles.actionBtn}>
-            <HiOutlineCog size={32} />
-          </Link>
-          <button onClick={handleLogout} className={styles.actionBtn}>
-            <HiOutlineLogout size={32} />
-          </button>
+          <Link to="/profile/edit" className={styles.actionBtn}><HiOutlineCog size={32} /></Link>
+          <button onClick={handleLogout} className={styles.actionBtn}><HiOutlineLogout size={32} /></button>
 
-          {/* Блок брони */}
           <div className={styles.bookingBox}>
             {bookingLoading ? (
               <p>Загрузка...</p>
@@ -148,11 +138,9 @@ const Profile = () => {
                 {activeBooking.status === 'pending' && (
                   <div className={styles.bookingHeader}>
                     <p>Код активации: <strong>{activeBooking.activation_code}</strong></p>
-                    <p>Бронь ожидает активации.<br />Обратитесь к администратору.</p>
-                    <CountdownTimer expiresAt={activeBooking.expires_at} />
-                    <button className={styles.cancelBtn} onClick={handleCancel}>
-                      Отменить
-                    </button>
+                    <p>Бронь ожидает активации. Обратитесь к администратору.</p>
+                    {timerStartTime && <CountdownTimer startTime={timerStartTime} />}
+                    <button className={styles.cancelBtn} onClick={handleCancel}>Отменить</button>
                   </div>
                 )}
                 {activeBooking.status === 'active' && (
@@ -161,13 +149,9 @@ const Profile = () => {
                       <p>Забронированное место: <br />{activeBooking.computer_name}</p>
                       <p>Время: {activeBooking.start_time?.slice(0,5)} - {activeBooking.end_time?.slice(0,5)}</p>
                       <p>Дата: {new Date(activeBooking.booking_date).toLocaleDateString('ru-RU')}</p>
-                      <p>
-                        Кухня: {getKitchenNames(activeBooking.kitchen_items, allKitchen) || 'не выбрана'}
-                      </p>
+                      <p>Кухня: {getKitchenNames(activeBooking.kitchen_items, allKitchen) || 'не выбрана'}</p>
                     </div>
-                    <button className={styles.cancelBtn} onClick={handleCancel}>
-                      Отменить
-                    </button>
+                    <button className={styles.cancelBtn} onClick={handleCancel}>Отменить</button>
                   </div>
                 )}
               </>
@@ -178,7 +162,6 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* История бронирования */}
       <div className={styles.historySection}>
         <h2 className={styles.historyTitle}>История Бронирования</h2>
         <HistoryList />

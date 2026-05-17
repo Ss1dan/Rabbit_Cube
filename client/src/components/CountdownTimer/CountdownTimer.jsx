@@ -1,30 +1,54 @@
 import React, { useState, useEffect } from 'react';
 
-const CountdownTimer = ({ expiresAt }) => {
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
-  function calculateTimeLeft() {
-    const diff = new Date(expiresAt) - new Date();
-    if (diff <= 0) return null;
-    return {
-      minutes: Math.floor(diff / 60000),
-      seconds: Math.floor((diff % 60000) / 1000),
-    };
-  }
+const CountdownTimer = ({ startTime }) => {
+  const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const left = calculateTimeLeft();
-      setTimeLeft(left);
-      if (!left) clearInterval(timer);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [expiresAt]);
+    if (!startTime) {
+      setTimeLeft(null);
+      return;
+    }
 
-  if (!timeLeft) return <p>Время активации истекло</p>;
+    const startDate = new Date(startTime);
+    if (isNaN(startDate.getTime())) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const endTime = new Date(startDate.getTime() + 15 * 60 * 1000);
+
+    const update = () => {
+      const diff = endTime - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ expired: true });
+        return;
+      }
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setTimeLeft({ hours, minutes, seconds, expired: false });
+    };
+
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [startTime]);
+
+  if (!startTime) {
+    return <p style={{ color: '#ff6b6b' }}>Неверная дата брони</p>;
+  }
+  if (!timeLeft) {
+    return <p style={{ color: 'var(--text)' }}>Загрузка...</p>;
+  }
+  if (timeLeft.expired) {
+    return <p style={{ color: '#ff6b6b' }}>Время истекло</p>;
+  }
+
   return (
-    <p>
-      Осталось: {timeLeft.minutes} мин {timeLeft.seconds} сек
+    <p style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '14px' }}>
+      Осталось: {String(timeLeft.hours).padStart(2, '0')}:
+      {String(timeLeft.minutes).padStart(2, '0')}:
+      {String(timeLeft.seconds).padStart(2, '0')}
     </p>
   );
 };
