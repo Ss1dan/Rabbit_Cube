@@ -61,42 +61,43 @@ const Register = () => {
     document.documentElement.classList.toggle('light-theme');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.repeatPassword) {
       alert('Пароли не совпадают');
       return;
     }
-    
     if (!policyAccepted) {
       alert('Примите условия политики конфиденциальности');
       return;
     }
-
-    // Проверка email
     if (!emailRegex.test(form.email)) {
-      alert('Введите корректный email (например, user@example.com)');
+      alert('Введите корректный email');
       return;
     }
-
     const phoneRegex = /^\+7 \d{3} \d{3} \d{2} \d{2}$/;
     if (!phoneRegex.test(form.phone)) {
       alert('Введите корректный номер телефона (+7 XXX XXX XX XX)');
       return;
     }
-
-    dispatch(signup({
-      login: form.login,
-      email: form.email,
-      phone: form.phone,
-      password: form.password,
-      roles: ['User']
-    })).then((res) => {
-      if (res.meta.requestStatus === 'fulfilled') {
+  
+    try {
+      const result = await dispatch(signup({
+        login: form.login,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        roles: ['User'],
+      }));
+      if (result.meta.requestStatus === 'fulfilled') {
         alert('Регистрация успешна! Проверьте почту для подтверждения.');
         navigate('/login');
+      } else {
+        alert(result.payload?.message || 'Ошибка регистрации');
       }
-    });
+    } catch (err) {
+      alert('Ошибка сети или сервера');
+    }
   };
   useEffect(() => { document.title = 'Rabbit Cube — Регистрация'; }, []);
   return (
