@@ -1,7 +1,6 @@
 const path = require('path');
 
 function getConnection() {
-  // Railway предоставляет DATABASE_URL
   if (process.env.DATABASE_URL) {
     const { URL } = require('url');
     const dbUrl = new URL(process.env.DATABASE_URL);
@@ -14,7 +13,6 @@ function getConnection() {
     };
   }
 
-  // Railway может давать отдельные переменные
   if (process.env.PGHOST) {
     return {
       host: process.env.PGHOST,
