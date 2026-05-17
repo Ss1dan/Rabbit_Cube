@@ -11,9 +11,10 @@ const bookingRoutes = require('./routes/booking.routes');
 const adminRoutes = require('./routes/admin.routes');
 const kitchenRoutes = require('./routes/kitchen.routes');
 
+const knexConfig = require('./config/knexfile');
+const knex = require('knex')(knexConfig.development);
+
 setInterval(async () => {
-  const knexConfig = require('./config/knexfile');
-  const knex = require('knex')(knexConfig.development);
   try {
     await knex('bookings')
       .where('status', 'active')
