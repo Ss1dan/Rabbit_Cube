@@ -79,3 +79,15 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   winston.info(`Сервер запущен на порту ${PORT}`);
 });
+
+// Автоматическое закрытие активных броней, у которых вышло время
+setInterval(async () => {
+  try {
+    await knex('bookings')
+      .where('status', 'active')
+      .whereRaw("(booking_date::timestamp + end_time::time) < now()")
+      .update({ status: 'completed' });
+  } catch (err) {
+    console.error('Ошибка авто-закрытия броней:', err);
+  }
+}, 10000); // каждые 10 секунд

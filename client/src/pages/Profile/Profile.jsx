@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../../api';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile, clearProfile } from '../../store/profileSlice';
 import { fetchActiveBooking, clearActiveBooking } from '../../store/bookingSlice';
@@ -10,13 +11,13 @@ import HistoryList from './HistoryList';
 import styles from './Profile.module.css';
 import CountdownTimer from '../../components/CountdownTimer/CountdownTimer';
 
-
 const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { data: profile, loading: profileLoading } = useSelector(state => state.profile);
   const { activeBooking, loading: bookingLoading } = useSelector(state => state.booking);
   const { isAuth } = useSelector(state => state.auth);
+  const [allKitchen, setAllKitchen] = useState([]);
 
   useEffect(() => {
     document.title = 'Rabbit Cube — Профиль';
@@ -24,6 +25,18 @@ const Profile = () => {
       navigate('/login');
       return;
     }
+
+    // Загрузка кухни (до return!)
+    const loadKitchen = async () => {
+      try {
+        const res = await API.get('/kitchen');
+        setAllKitchen(res.data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadKitchen();
+
     dispatch(fetchProfile());
     dispatch(fetchActiveBooking());
     dispatch(fetchHistory(1));
@@ -32,6 +45,14 @@ const Profile = () => {
       dispatch(clearProfile());
     };
   }, [dispatch, isAuth, navigate]);
+
+  // Авто-проверка активной брони каждые 5 секунд
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(fetchActiveBooking());
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -49,6 +70,35 @@ const Profile = () => {
     } else {
       alert('Ошибка при отмене бронирования');
     }
+  };
+
+  const getKitchenNames = (kitchenItems, allKitchen) => {
+    if (!kitchenItems || !allKitchen.length) return '';
+
+    let ids = [];
+
+    // Если строка JSON – парсим
+    if (typeof kitchenItems === 'string') {
+      try {
+        ids = JSON.parse(kitchenItems);
+      } catch {
+        return '';
+      }
+    } else if (Array.isArray(kitchenItems)) {
+      ids = kitchenItems;
+    } else {
+      return '';
+    }
+
+    return ids
+      .map(item => {
+        // item может быть числом (ID) или объектом с полем id (из админки)
+        const id = typeof item === 'object' ? item.id : item;
+        const found = allKitchen.find(k => k.id == id);
+        return found ? found.name : '';
+      })
+      .filter(name => name !== '')
+      .join(', ');
   };
 
   return (
@@ -80,7 +130,7 @@ const Profile = () => {
             </Link>
           )}
         </div>
-
+          
         <div className={styles.columnActions}>
           <Link to="/profile/edit" className={styles.actionBtn}>
             <HiOutlineCog size={32} />
@@ -89,40 +139,38 @@ const Profile = () => {
             <HiOutlineLogout size={32} />
           </button>
 
-          {/* Блок активной брони */}
+          {/* Блок брони */}
           <div className={styles.bookingBox}>
             {bookingLoading ? (
               <p>Загрузка...</p>
             ) : activeBooking ? (
-              <div className={styles.activeBooking}>
-                <div className={styles.bookingHeader}>
-                  <p>Забронированное место: <br></br>{activeBooking.computer_name}</p>
-                  <p>Время: {activeBooking.start_time} - {activeBooking.end_time}</p>
-                  <p>Дата: {new Date(activeBooking.booking_date).toLocaleDateString('ru-RU')}</p>
-                  {activeBooking.kitchen_items && (
-                  <p>
-                    Кухня:{' '}
-                      {(() => {
-                        const items =
-                          typeof activeBooking.kitchen_items === 'string'
-                          ? JSON.parse(activeBooking.kitchen_items)
-                          : activeBooking.kitchen_items;
-                      return Array.isArray(items) ? items.join(', ') : '';
-                      })()}
-                  </p>
+              <>
+                {activeBooking.status === 'pending' && (
+                  <div className={styles.bookingHeader}>
+                    <p>Код активации: <strong>{activeBooking.activation_code}</strong></p>
+                    <p>Бронь ожидает активации.<br />Обратитесь к администратору.</p>
+                    <CountdownTimer expiresAt={activeBooking.expires_at} />
+                    <button className={styles.cancelBtn} onClick={handleCancel}>
+                      Отменить
+                    </button>
+                  </div>
                 )}
-                  {activeBooking && activeBooking.status === 'pending' && (
-  <div className={styles.pendingBooking}>
-    <p>Код активации: <strong>{activeBooking.activation_code}</strong></p>
-    <p>Бронь ожидает активации. Обратитесь к администратору.</p>
-    <CountdownTimer expiresAt={activeBooking.expires_at} />
-  </div>
-)}
-                </div>
-                <button className={styles.cancelBtn} onClick={handleCancel}>
-                  Отменить
-                </button>
-              </div>
+                {activeBooking.status === 'active' && (
+                  <div className={styles.activeBooking}>
+                    <div className={styles.bookingHeader}>
+                      <p>Забронированное место: <br />{activeBooking.computer_name}</p>
+                      <p>Время: {activeBooking.start_time?.slice(0,5)} - {activeBooking.end_time?.slice(0,5)}</p>
+                      <p>Дата: {new Date(activeBooking.booking_date).toLocaleDateString('ru-RU')}</p>
+                      <p>
+                        Кухня: {getKitchenNames(activeBooking.kitchen_items, allKitchen) || 'не выбрана'}
+                      </p>
+                    </div>
+                    <button className={styles.cancelBtn} onClick={handleCancel}>
+                      Отменить
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <p className={styles.noBooking}>Брони нет</p>
             )}

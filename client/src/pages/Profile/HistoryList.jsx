@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchHistory, cancelBooking } from '../../store/historySlice';
 import styles from './Profile.module.css';
+import { getStatusText } from '../../utils/statusMap';
 
 const HistoryList = () => {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ const HistoryList = () => {
               Дата: {new Date(booking.booking_date).toLocaleDateString('ru-RU')}
             </p>
             <p className={styles.cardInfo}>Время: {booking.start_time} – {booking.end_time}</p>
-            <p className={styles.cardStatus}>Статус: {booking.status}</p>
+            <p className={styles.cardStatus}>Статус: {getStatusText(booking.status)}</p>
             {booking.status === 'active' && (
               <button 
                 className={styles.cancelBtnSmall}

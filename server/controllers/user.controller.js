@@ -11,7 +11,13 @@ exports.getProfile = async (req, res) => {
       .where({ id: req.userId })
       .first();
     if (!user) return res.status(404).send({ message: 'Пользователь не найден' });
-    res.status(200).send(user);
+
+    const roles = await db('roles')
+      .join('user_roles', 'roles.id', 'user_roles.role_id')
+      .where('user_roles.user_id', req.userId)
+      .pluck('roles.name');
+
+    res.status(200).send({ ...user, roles });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }

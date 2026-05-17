@@ -4,11 +4,14 @@ import API from '../../api';
 import styles from './Popup.module.css';
 import { fetchKitchenItems } from '../../store/kitchenSlice';
 
+const ITEMS_PER_PAGE = 5; // сколько позиций показывать на одной странице
+
 const Popup = ({ onClose, onBook, kitchenItemsSelected, onToggleKitchen }) => {
   const selectedPlaceId = useSelector(state => state.booking.selectedPlace);
   const [computer, setComputer] = useState(null);
   const dispatch = useDispatch();
   const kitchenItems = useSelector(state => state.kitchen.items);
+  const [kitchenPage, setKitchenPage] = useState(1);
 
   useEffect(() => {
     if (selectedPlaceId) {
@@ -21,6 +24,17 @@ const Popup = ({ onClose, onBook, kitchenItemsSelected, onToggleKitchen }) => {
 
   if (!computer) return null;
   const specs = typeof computer.specs === 'string' ? JSON.parse(computer.specs) : computer.specs;
+
+  // Пагинация
+  const totalPages = Math.ceil(kitchenItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = kitchenItems.slice(
+    (kitchenPage - 1) * ITEMS_PER_PAGE,
+    kitchenPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page) => {
+    setKitchenPage(page);
+  };
 
   return (
     <div className={styles.overlay}>
@@ -35,18 +49,33 @@ const Popup = ({ onClose, onBook, kitchenItemsSelected, onToggleKitchen }) => {
         </div>
         <h3 className={styles.kitchenTitle}>Кухня</h3>
         <div className={styles.kitchenList}>
-  {kitchenItems.map(item => (
-    <label key={item.id} className={styles.kitchenItem}>
-      <input
-        type="checkbox"
-        checked={kitchenItemsSelected.includes(item.id)}
-        onChange={() => onToggleKitchen(item.id)}
-      />
-      <span className={styles.kitchenName}>{item.name}</span>
-      <span className={styles.kitchenPrice}>{item.price}р</span>
-    </label>
-  ))}
-</div>
+          {paginatedItems.map(item => (
+            <label key={item.id} className={styles.kitchenItem}>
+              <input
+                type="checkbox"
+                checked={kitchenItemsSelected.includes(item.id)}
+                onChange={() => onToggleKitchen(item.id)}
+              />
+              <span>{item.name} ({item.price}р)</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Пагинация */}
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                className={`${styles.pageBtn} ${page === kitchenPage ? styles.activePage : ''}`}
+                onClick={() => handlePageChange(page)}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={styles.buttons}>
           <button className={styles.bookBtn} onClick={onBook}>Забронировать</button>
           <button className={styles.closeBtn} onClick={onClose}>Закрыть</button>

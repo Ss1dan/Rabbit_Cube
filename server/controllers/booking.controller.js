@@ -21,21 +21,19 @@ exports.createBooking = async (req, res) => {
   }
 
   try {
-    // Проверка: у пользователя может быть только одна активная бронь
-    const activeBooking = await db('bookings')
-      .where({ user_id: userId, status: 'active' })
+    // Проверка: у пользователя не должно быть активной или ожидающей брони
+    const existingBooking = await db('bookings')
+      .where({ user_id: userId })
+      .whereIn('status', ['active', 'pending'])
       .first();
-
-    if (activeBooking) {
-      // Можно либо запретить новую бронь, либо отменить старую. Сейчас запретим.
-      return res.status(409).send({
-        message: 'У вас уже есть активная бронь. Сначала отмените текущую бронь.'
-      });
+    if (existingBooking) {
+      return res.status(409).send({ message: 'У вас уже есть активная или ожидающая бронь. Сначала отмените её.' });
     }
 
     // Проверка конфликтов по времени для компьютера
     const conflict = await db('bookings')
-      .where({ computer_id, booking_date, status: 'active' })
+      .where({ computer_id, booking_date })
+      .whereIn('status', ['active', 'pending'])
       .where(function() {
         this.where('start_time', '<', end_time).andWhere('end_time', '>', start_time);
       })
@@ -43,7 +41,8 @@ exports.createBooking = async (req, res) => {
     if (conflict) {
       return res.status(409).send({ message: 'Это время уже занято' });
     }
-    // Генерируем 6-значный код активации
+
+    // Генерируем код активации и срок
     const activationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // +15 минут
 
@@ -59,40 +58,30 @@ exports.createBooking = async (req, res) => {
       expires_at: expiresAt,
     }).returning('id');
 
-    // Получить информацию для письма
-    const computer = await db('computers').where({ id: computer_id }).first();
-    const user = await db('users').where({ id: userId }).first();
-
-    try {
-      await mailService.sendBookingConfirmation(user.email, {
-        booking_date,
-        start_time,
-        end_time,
-        computer_name: computer.name
-      });
-    } catch (mailErr) {
-      console.error('Ошибка отправки уведомления:', mailErr);
-    }
-
-    res.status(201).send({ message: 'Бронирование создано', bookingId });
+    // Отправляем код активации в ответе
+    res.status(201).send({
+      message: 'Бронирование создано (ожидает активации)',
+      activationCode: activationCode,
+    });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 };
 
 exports.getActiveBooking = async (req, res) => {
-  // Помечаем истекшие брони как expired
-  await db('bookings')
-  .where('status', 'pending')
-  .andWhere('expires_at', '<', new Date())
-  .update({ status: 'expired', activation_code: null, expires_at: null });
-
   try {
+    // Автоматически помечаем просроченные ожидающие брони как истекшие
+    await db('bookings')
+      .where('status', 'pending')
+      .andWhere('expires_at', '<', new Date())
+      .update({ status: 'expired', activation_code: null, expires_at: null });
+
+    // Ищем любую бронь со статусом active или pending для текущего пользователя
     const booking = await db('bookings')
       .join('computers', 'bookings.computer_id', 'computers.id')
       .where('bookings.user_id', req.userId)
-      .where('bookings.status', 'active')
-      .orderBy('bookings.booking_date', 'asc')
+      .whereIn('bookings.status', ['active', 'pending'])
+      .orderBy('bookings.created_at', 'desc')
       .first()
       .select(
         'bookings.*',
@@ -100,8 +89,9 @@ exports.getActiveBooking = async (req, res) => {
         'computers.type as computer_type',
         'computers.specs'
       );
+
     if (!booking) {
-      return res.status(404).send({ message: 'Нет активных бронирований' });
+      return res.status(404).send({ message: 'Нет активных или ожидающих бронирований' });
     }
     res.status(200).send(booking);
   } catch (err) {

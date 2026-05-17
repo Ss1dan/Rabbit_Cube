@@ -25,7 +25,7 @@ exports.getOccupiedForSlot = async (req, res) => {
   try {
     const occupied = await db('bookings')
       .where('booking_date', date)
-      .where('status', 'active')
+      .where('status', ['active', 'pending'])
       .where(function() {
         this.where('start_time', '<', end_time).andWhere('end_time', '>', start_time);
       })

@@ -97,7 +97,7 @@
     justify-content: center;
     cursor: pointer;
     text-decoration: none;
-    color: #000;
+    color: #eee;
     width: 48px;
     height: 48px;
     
@@ -244,12 +244,12 @@
 
 .pageBtn:hover {
   background-color: var(--accent);
-  color: #000;
+  color: #eee;
 }
 
 .activePage {
   background-color: var(--accent);
-  color: #000;
+  color: #eee;
   font-weight: bold;
 }
 

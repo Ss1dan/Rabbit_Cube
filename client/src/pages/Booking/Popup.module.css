@@ -145,3 +145,33 @@
   margin-left: auto;
   white-space: nowrap;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.pageBtn {
+  background-color: var(--block);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.pageBtn:hover {
+  background-color: var(--accent);
+  color: #eee;
+}
+
+.activePage {
+  background-color: var(--accent);
+  color: #eee;
+  font-weight: bold;
+}

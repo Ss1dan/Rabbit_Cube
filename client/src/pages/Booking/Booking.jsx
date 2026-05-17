@@ -8,6 +8,8 @@ import dayjs from 'dayjs';
 import Scheme from './Scheme';
 import Popup from './Popup';
 import styles from './Booking.module.css';
+import { useNavigate } from 'react-router-dom';
+import { fetchActiveBooking } from '../../store/bookingSlice';
 
 const Booking = () => {
   const dispatch = useDispatch();
@@ -16,7 +18,6 @@ const Booking = () => {
   const [showPopup, setShowPopup] = useState(false);
   const selectedDateObj = new Date(selectedDate);
 
-  // Обновление занятых мест при изменении даты/времени
   useEffect(() => {
     document.title = 'Rabbit Cube — Бронирование';
     if (selectedTimeStart && selectedTimeEnd) {
@@ -34,26 +35,33 @@ const Booking = () => {
     setShowPopup(true);
   };
 
-  const handleBooking = () => {
-    const startTimeWithSeconds = selectedTimeStart.length === 5 ? selectedTimeStart + ':00' : selectedTimeStart;
-    const endTimeWithSeconds = selectedTimeEnd.length === 5 ? selectedTimeEnd + ':00' : selectedTimeEnd;
+  const navigate = useNavigate();
+  const handleBooking = async () => {
     if (!selectedPlace || !selectedTimeStart || !selectedTimeEnd) {
       alert('Выберите дату, время и место');
       return;
     }
-    dispatch(createBooking({
+  
+    const startTimeWithSec = selectedTimeStart.length === 5 ? selectedTimeStart + ':00' : selectedTimeStart;
+    const endTimeWithSec = selectedTimeEnd.length === 5 ? selectedTimeEnd + ':00' : selectedTimeEnd;
+  
+    const result = await dispatch(createBooking({
       computer_id: selectedPlace,
       booking_date: dayjs(selectedDate).format('YYYY-MM-DD'),
-      start_time: selectedTimeStart,
-      end_time: selectedTimeEnd,
-      kitchen_items: kitchenItems
-    })).then((res) => {
-      if (res.meta.requestStatus === 'fulfilled') {
-        alert('Бронирование успешно!');
-        dispatch(clearBooking());
-      }
-    });
+      start_time: startTimeWithSec,
+      end_time: endTimeWithSec,
+      kitchen_items: kitchenItems,
+    }));
+  
+    if (createBooking.fulfilled.match(result)) {
+      dispatch(clearBooking());
+      await dispatch(fetchActiveBooking());
+      navigate('/profile');
+    } else {
+      alert(result.payload?.message || 'Ошибка бронирования');
+    }
   };
+
 
   return (
     <div className={styles.container}>
