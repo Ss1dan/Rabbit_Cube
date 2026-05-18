@@ -12,7 +12,13 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError('');
     try {
-      await API.post('/auth/forgot', { email });
+      const res = await API.post('/auth/forgot', { email });
+      const token = res.data?.resetToken;
+      if (token) {
+        const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
+        const link = `${baseUrl}/reset-password?token=${token}`;
+        window.prompt('Ссылка для сброса пароля (скопируйте):', link);
+      }
       setSent(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Ошибка отправки');

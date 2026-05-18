@@ -73,13 +73,10 @@ const EditProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Проверка email
     if (!emailRegex.test(form.email)) {
-      alert('Введите корректный email (например, user@example.com)');
+      alert('Введите корректный email');
       return;
     }
-  
-    // Проверка телефона
     if (!phoneRegex.test(form.phone)) {
       alert('Введите корректный номер телефона (+7 XXX XXX XX XX)');
       return;
@@ -104,17 +101,27 @@ const EditProfile = () => {
   
     const result = await dispatch(updateProfile(formData));
     if (result.meta.requestStatus === 'fulfilled') {
-      let alertMsg = '';
-      if (result.payload.emailPending) {
-        alertMsg += 'На новый email отправлено письмо для подтверждения. ';
+      let alertMsg = 'Изменения сохранены';
+  
+      if (result.payload.emailPendingToken) {
+        const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
+        const link = `${baseUrl}/confirm-email-change?token=${result.payload.emailPendingToken}`;
+        window.prompt('Ссылка для подтверждения нового email (скопируйте):', link);
+        alertMsg = 'На новый email отправлено письмо. Ссылка также показана выше.';
       }
-      if (result.payload.passwordPending) {
-        alertMsg += 'На ваш email отправлено письмо для подтверждения смены пароля. ';
+  
+      if (result.payload.passwordPendingToken) {
+        const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
+        const link = `${baseUrl}/confirm-password-change?token=${result.payload.passwordPendingToken}`;
+        window.prompt('Ссылка для подтверждения смены пароля (скопируйте):', link);
+        alertMsg = 'На ваш email отправлено письмо для подтверждения смены пароля. Ссылка также показана выше.';
       }
-      if (!result.payload.emailPending && !result.payload.passwordPending) {
-        alertMsg = 'Изменения сохранены';
+  
+      if (!result.payload.emailPendingToken && !result.payload.passwordPendingToken) {
+        alert(alertMsg);
+      } else {
+        alert(alertMsg);
       }
-      alert(alertMsg);
       navigate('/profile');
     } else {
       alert(result.payload?.message || 'Ошибка сохранения');
