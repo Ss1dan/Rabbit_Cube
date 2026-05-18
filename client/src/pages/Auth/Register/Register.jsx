@@ -90,7 +90,10 @@ const Register = () => {
         roles: ['User'],
       }));
       if (result.meta.requestStatus === 'fulfilled') {
-        alert('Регистрация успешна! Проверьте почту для подтверждения.');
+        const token = result.payload.confirmationToken;
+        const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
+        const link = `${baseUrl}/confirm?token=${token}`;
+        alert(`Регистрация успешна!\nСсылка для подтверждения:\n${link}`);
         navigate('/login');
       } else {
         alert(result.payload?.message || 'Ошибка регистрации');
@@ -102,13 +105,13 @@ const Register = () => {
   useEffect(() => { document.title = 'Rabbit Cube — Регистрация'; }, []);
   return (
     <div className={styles.page}>
-      {/* Шапка 1200x108 */}
+      {/* Шапка  */}
       <div className={styles.header}>
         <img src="/media/logo.svg" alt="Rabbit Cube" className={styles.logoImg} />
         <span className={styles.logoText}>Rabbit Cube</span>
       </div>
 
-      {/* Блок формы 654x681 */}
+      {/* Блок формы */}
       <div className={styles.formBlock}>
         <h1 className={styles.title}>Создать аккаунт</h1>
         <p className={styles.subtitle}>После регистрации подтверди аккаунт в почте</p>
