@@ -12,12 +12,12 @@ const bookingRoutes = require('./routes/booking.routes');
 const adminRoutes = require('./routes/admin.routes');
 const kitchenRoutes = require('./routes/kitchen.routes');
 
-// ======== Инициализация knex (один раз) ========
+// Один экземпляр knex для авто‑миграции и авто‑закрытия
 const knexConfig = require('./config/knexfile');
 const knex = require('knex')(knexConfig.development);
 
-// ======== Авто-закрытие просроченных броней ========
-const closeExpiredBookings = async () => {
+// Авто‑закрытие просроченных броней
+const closeExpired = async () => {
   try {
     const updated = await knex('bookings')
       .where('status', 'active')
@@ -28,27 +28,21 @@ const closeExpiredBookings = async () => {
     console.error('Ошибка авто-закрытия броней:', err);
   }
 };
+closeExpired();
+setInterval(closeExpired, 60000);
 
-// Сразу при старте
-closeExpiredBookings();
-
-// Каждые 60 секунд
-setInterval(closeExpiredBookings, 60000);
-
-// ======== Авто-миграция ========
+// Авто‑миграция и сиды
 (async () => {
   try {
     console.log('Проверяю базу данных...');
     await knex.raw('SELECT 1');
     console.log('База доступна.');
-
     const [migrations] = await knex.migrate.latest();
     if (migrations.length) {
       console.log(`Применено новых миграций: ${migrations.length}`);
     } else {
       console.log('Новых миграций нет.');
     }
-
     const rolesCount = await knex('roles').count('id as count').first();
     if (!rolesCount.count || rolesCount.count == 0) {
       console.log('Запускаю сиды...');
@@ -58,36 +52,27 @@ setInterval(closeExpiredBookings, 60000);
       console.log('Сиды уже были запущены.');
     }
   } catch (err) {
-    console.error('Ошибка миграции/БД, но сервак работает:', err.message);
+    console.error('Ошибка миграции/БД, но сервер работает:', err.message);
   }
 })();
 
-// ======== Экспресс приложение ========
 const app = express();
 
-// ======== CORS ========
-app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
-  credentials: true
-}));
+// CORS (только один раз!)
+app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
 
-// ======== Логирование ========
-app.use(morgan('combined', { stream: { write: message => winston.http(message.trim()) } }));
-
-// ======== Body parsers ========
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan('combined', { stream: { write: message => winston.http(message.trim()) } }));
 
-// ======== Создание папок для загрузки (если нет) ========
+// Создаём папку для аватаров, если её нет
 const uploadsDir = path.join(__dirname, 'uploads', 'avatars');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-
-// ======== Статика ========
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ======== Маршруты API ========
+// API-роуты
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/computers', computerRoutes);
@@ -95,18 +80,17 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/kitchen', kitchenRoutes);
 
-// ======== Корневой маршрут ========
+// Корневой маршрут
 app.get('/', (req, res) => {
   res.json({ message: 'Rabbit Cube API is running' });
 });
 
-// ======== Обработка ошибок ========
+// Обработка ошибок
 app.use((err, req, res, next) => {
   winston.error(err.stack);
   res.status(500).send({ message: 'Внутренняя ошибка сервера' });
 });
 
-// ======== Запуск ========
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   winston.info(`Сервер запущен на порту ${PORT}`);
