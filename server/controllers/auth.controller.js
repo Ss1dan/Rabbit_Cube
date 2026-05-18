@@ -67,6 +67,7 @@ exports.signup = async (req, res) => {
       email,
       phone: phone || '',
       password: hashedPassword,
+      avatar: 'default-avatar.png',
     }).returning('id');
 
     const userId = userRecord.id;
