@@ -14,6 +14,20 @@ const kitchenRoutes = require('./routes/kitchen.routes');
 const knexConfig = require('./config/knexfile');
 const knex = require('knex')(knexConfig.development);
 
+// Сразу закрываем просроченные брони при старте
+(async () => {
+  try {
+    const updated = await knex('bookings')
+      .where('status', 'active')
+      .whereRaw("(booking_date || ' ' || end_time)::timestamp < now()")
+      .update({ status: 'completed' });
+    if (updated) console.log(`Закрыто просроченных броней: ${updated}`);
+  } catch (err) {
+    console.error('Ошибка при закрытии просроченных броней:', err);
+  }
+})();
+
+// Затем каждые 60 секунд проверяем
 setInterval(async () => {
   try {
     await knex('bookings')
