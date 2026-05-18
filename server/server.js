@@ -115,3 +115,10 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   winston.info(`Сервер запущен на порту ${PORT}`);
 });
+
+const defaultAvatarSrc = path.join(__dirname, 'assets', 'default-avatar.png');
+const defaultAvatarDest = path.join(__dirname, 'uploads', 'avatars', 'default-avatar.png');
+if (!fs.existsSync(defaultAvatarDest)) {
+  fs.copyFileSync(defaultAvatarSrc, defaultAvatarDest);
+  console.log('Файл default-avatar.png скопирован в uploads/avatars');
+}

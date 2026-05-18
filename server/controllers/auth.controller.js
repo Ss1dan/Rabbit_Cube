@@ -28,7 +28,7 @@ exports.googleAuth = async (req, res) => {
                 phone: '',
                 password: '',
                 confirmed: true,
-                avatar: picture || 'default.png'
+                avatar: picture || 'default-avatar.png'
             }).returning('id');
             const userId = newUser.id;
 
