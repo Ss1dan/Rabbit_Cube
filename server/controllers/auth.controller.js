@@ -58,37 +58,33 @@ exports.googleAuth = async (req, res) => {
 };
 
 // Регистрация
-exports.signin = async (req, res) => {
-  const { email, password } = req.body;
+exports.signup = async (req, res) => {
+  const { login, email, phone, password } = req.body;
   try {
-    const user = await db('users').where({ email }).first();
-    if (!user) {
-      return res.status(404).send({ message: 'Пользователь не найден' });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [userRecord] = await db('users').insert({
+      login,
+      email,
+      phone: phone || '',
+      password: hashedPassword,
+    }).returning('id');
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(401).send({ message: 'Неверный пароль' });
-    }
+    const userId = userRecord.id;
+    const userRole = await db('roles').where({ name: 'User' }).first();
+    await db('user_roles').insert({ user_id: userId, role_id: userRole.id });
 
-    // Проверка подтверждения email – оставляем, если она была изначально
-    if (!user.confirmed) {
-      return res.status(403).send({ message: 'Почта не подтверждена' });
-    }
+    // Генерируем токен подтверждения
+    const token = jwt.sign({ id: userId }, config.secret, { expiresIn: '1d' });
+    
+    // Выводим ссылку в консоль Railway
+    const confirmationLink = `${process.env.CLIENT_URL || 'http://localhost:3000'}/confirm?token=${token}`;
+    console.log(`\n[MAIL] Подтверждение регистрации для ${email}`);
+    console.log(`Ссылка: ${confirmationLink}\n`);
 
-    const token = jwt.sign({ id: user.id }, config.secret, { expiresIn: '24h' });
-
-    const roles = await db('roles')
-      .join('user_roles', 'roles.id', 'user_roles.role_id')
-      .where('user_roles.user_id', user.id)
-      .pluck('roles.name');
-
-    res.status(200).send({
-      id: user.id,
-      login: user.login,
-      email: user.email,
-      roles,
-      accessToken: token,
+    // Возвращаем токен клиенту, чтобы показать в alert
+    res.status(201).send({ 
+      message: 'Регистрация успешна. Подтвердите почту. (Из-за бесплатного тарифа, нет возможности сделать нормально отправку через почту)',
+      confirmationToken: token,
     });
   } catch (err) {
     res.status(500).send({ message: err.message });
