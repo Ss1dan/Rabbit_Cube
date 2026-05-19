@@ -90,12 +90,10 @@ const Register = () => {
         roles: ['User'],
       }));
       if (result.meta.requestStatus === 'fulfilled') {
-        const token = result.payload.confirmationLink;   // ← исправлено
-        const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
-        const link = `${baseUrl}/confirm?token=${token}`;
+        const link = result.payload.confirmationLink;
         window.prompt('Скопируйте ссылку для подтверждения аккаунта:', link);
         navigate('/login');
-      } else {
+    } else {
         alert(result.payload?.message || 'Ошибка регистрации');
       }
     } catch (err) {
