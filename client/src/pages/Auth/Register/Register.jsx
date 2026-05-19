@@ -93,7 +93,7 @@ const Register = () => {
         const link = result.payload.confirmationLink;
         window.prompt('Скопируйте ссылку для подтверждения аккаунта:', link);
         navigate('/login');
-    } else {
+      } else {
         alert(result.payload?.message || 'Ошибка регистрации');
       }
     } catch (err) {
