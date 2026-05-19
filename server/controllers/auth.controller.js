@@ -78,7 +78,7 @@ exports.signup = async (req, res) => {
     const token = jwt.sign({ id: userId }, config.secret, { expiresIn: '1d' });
     
     // Выводим ссылку в консоль Railway
-    const confirmationLink = `${process.env.CLIENT_URL || 'http://localhost:3000'}/confirm?token=${token}`;
+    const confirmationLink = `${process.env.CLIENT_URL || 'https://rabbitcube.up.railway.app'}/confirm?token=${token}`;
     console.log(`\n[MAIL] Подтверждение регистрации для ${email}`);
     console.log(`Ссылка: ${confirmationLink}\n`);
 
