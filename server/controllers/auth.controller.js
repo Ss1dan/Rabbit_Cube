@@ -85,7 +85,7 @@ exports.signup = async (req, res) => {
     // Возвращаем токен клиенту, чтобы показать в alert
     res.status(201).send({ 
       message: 'Регистрация успешна. Подтвердите почту. (Из-за бесплатного тарифа, нет возможности сделать нормально отправку через почту)',
-      confirmationLink,
+      confirmationLink: token,
     });
   } catch (err) {
     res.status(500).send({ message: err.message });
