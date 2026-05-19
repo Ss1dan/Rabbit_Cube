@@ -92,8 +92,8 @@ const Register = () => {
       if (result.meta.requestStatus === 'fulfilled') {
         const token = result.payload.confirmationToken;
         const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://rabbitcube.up.railway.app';
-        const link = `${baseUrl}/confirm?token=${token}`;
-        window.prompt('Регистрация успешна! Скопируйте ссылку для подтверждения аккаунта:', link);        
+        const link = result.payload.confirmationLink;
+        window.prompt('Регистрация успешна! Скопируйте ссылку и перейдите по ней для подтверждения аккаунта:', link);        
         navigate('/login');
       } else {
         alert(result.payload?.message || 'Ошибка регистрации');

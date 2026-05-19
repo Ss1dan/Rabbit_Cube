@@ -28,7 +28,7 @@ exports.googleAuth = async (req, res) => {
                 phone: '',
                 password: '',
                 confirmed: true,
-                avatar: 'default-avatar.png'
+                avatar: 'default-avatar.png',
             }).returning('id');
             const userId = newUser.id;
 
@@ -85,7 +85,7 @@ exports.signup = async (req, res) => {
     // Возвращаем токен клиенту, чтобы показать в alert
     res.status(201).send({ 
       message: 'Регистрация успешна. Подтвердите почту. (Из-за бесплатного тарифа, нет возможности сделать нормально отправку через почту)',
-      confirmationToken: token,
+      confirmationLink,
     });
   } catch (err) {
     res.status(500).send({ message: err.message });
